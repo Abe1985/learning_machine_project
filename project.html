@@ -70,7 +70,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 training &lt;- read.csv(&quot;pml-training.csv&quot;,na.strings=c(&quot;NA&quot;,&quot;&quot;,&quot;#DIV/0!&quot;))
 testing  &lt;- read.csv(&quot;pml-testing.csv&quot;,na.strings=c(&quot;NA&quot;,&quot;&quot;,&quot;#DIV/0!&quot;))</code></pre>
 <p>There are many columns with NA values, as we see with the command: colSums(is.na(training)). I will not actually print the result in the document because it is too large.</p>
-<p>Remove the columns where the most values are NA. Remove no numeric columns (first 6 columns)</p>
+<p>Remove the columns where the most values are NA and remove no numeric columns (first 6 columns):</p>
 <pre class="r"><code>tidy_data &lt;- training[, !apply( training , 2 , function(x) sum(is.na(x)) &gt; sum(!is.na(x)))]
 tidy_data &lt;- tidy_data[ , 7:60]</code></pre>
 <p>Split in training and testing data sets:</p>
@@ -105,7 +105,10 @@ modFit</code></pre>
 ## D    0    0   17 2235    0 0.0075488455
 ## E    0    0    0    2 2523 0.0007920792</code></pre>
 <p>As we can see in the model, the error rate is very low, about 0.44%. What gives us an accuracy of 99.66%.</p>
-<p>Now, we can evaluate the model with testing data</p>
+</div>
+<div id="cross-validation" class="section level3">
+<h3>Cross-Validation</h3>
+<p>Now, we can evaluate the model with testing data:</p>
 <pre class="r"><code>predTesting =predict(modFit, tidy_testing)
 confusionMatrix(tidy_testing$classe, predTesting)</code></pre>
 <pre><code>## Loading required namespace: e1071</code></pre>
@@ -140,6 +143,7 @@ confusionMatrix(tidy_testing$classe, predTesting)</code></pre>
 ## Detection Rate         0.2843   0.1930   0.1735   0.1631   0.1837
 ## Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839
 ## Balanced Accuracy      0.9993   0.9971   0.9980   0.9991   0.9990</code></pre>
+<p>We have an accuracy of 99.76, this validates our model.</p>
 </div>
 </div>
 <div id="generate-files" class="section level2">
@@ -156,7 +160,11 @@ enter_data &lt;- testing[, !apply( testing , 2 , function(x) sum(is.na(x)) &gt; 
 new_data = enter_data[ , 7:59]
 
 answers &lt;- predict(modFit,new_data)
-pml_write_files(answers)</code></pre>
+answers</code></pre>
+<pre><code>##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 
+##  B  A  B  A  A  E  D  B  A  A  B  C  B  A  E  E  A  B  B  B 
+## Levels: A B C D E</code></pre>
+<pre class="r"><code>#pml_write_files(answers)</code></pre>
 </div>
 
 
