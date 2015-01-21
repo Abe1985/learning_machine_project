@@ -31,10 +31,11 @@ testing  <- read.csv("pml-testing.csv",na.strings=c("NA","","#DIV/0!"))
 
 There are many columns with NA values, as we see with the command: colSums(is.na(training)). I will not actually print the result in the document because it is too large.
 
-Remove the columns where the most values are NA.
+Remove the columns where the most values are NA. Remove no numeric columns (first 6 columns)
 
 ```{r}
 tidy_data <- training[, !apply( training , 2 , function(x) sum(is.na(x)) > sum(!is.na(x)))]
+tidy_data <- tidy_data[ , 7:60]
 ```
 
 Split in training and testing data sets:
@@ -53,7 +54,7 @@ I will use the Random Forests because it has high accuracy, and performance is n
 modFit <- randomForest(classe ~ ., data=tidy_training, method="rf", importance=TRUE, ntree = 50)
 modFit
 ```
-As we can see in the model, the error rate is very low, about 0.02%. What gives us an accuracy of 99.8%.
+As we can see in the model, the error rate is very low, about 0.44%. What gives us an accuracy of 99.66%.
 
 Now, we can evaluate the model with testing data
 
@@ -62,6 +63,18 @@ predTesting =predict(modFit, tidy_testing)
 confusionMatrix(tidy_testing$classe, predTesting)
 
 ```
+
+
+## Generate Files
+
+```{r}
+enter_data <- testing[, !apply( testing , 2 , function(x) sum(is.na(x)) > sum(!is.na(x)))]
+new_data = enter_data[ , 7:59]
+
+answers <- predict(modFit,new_data)
+answers
+```
+
 
 
 
