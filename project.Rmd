@@ -1,0 +1,66 @@
+---
+fontsize: 10pt
+geometry: margin=0.20in
+output:
+  html_document: default
+  pdf_document:
+    fig_height: 3
+    fig_width: 4
+    highlight: default
+---
+## Practical Machine Learning - Prediction Assignment 
+
+* Author: Fabio Covolo Mazzo
+* Date: 21/01/2015
+
+### Executive Summary
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.
+
+For this analysis i
+
+### Preparing Data
+
+Load training and testing datasets from CSV files and identify NA values
+
+```{r}
+setwd("/home/fabiomazzo/R/project_learning_machine/")
+training <- read.csv("pml-training.csv",na.strings=c("NA","","#DIV/0!"))
+testing  <- read.csv("pml-testing.csv",na.strings=c("NA","","#DIV/0!"))
+```
+
+There are many columns with NA values, as we see with the command: colSums(is.na(training)). I will not actually print the result in the document because it is too large.
+
+Remove the columns where the most values are NA.
+
+```{r}
+tidy_data <- training[, !apply( training , 2 , function(x) sum(is.na(x)) > sum(!is.na(x)))]
+```
+
+Split in training and testing data sets:
+```{r}
+ library(caret)
+ inTrain = createDataPartition(y=tidy_data$classe, p=0.7, list=FALSE)
+ tidy_training = tidy_data [inTrain,]
+ tidy_testing = tidy_data [-inTrain,]
+```
+
+### Prediction using Random Forests
+
+I will use the Random Forests because it has high accuracy, and performance is not essential in this case.
+
+```{r}
+modFit <- train(classe ~ ., data=tidy_training, method="rf", prox=TRUE)
+modFit
+```
+
+
+
+
+
+
+
+
+
+
+
