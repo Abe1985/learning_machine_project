@@ -68,11 +68,20 @@ confusionMatrix(tidy_testing$classe, predTesting)
 ## Generate Files
 
 ```{r}
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
 enter_data <- testing[, !apply( testing , 2 , function(x) sum(is.na(x)) > sum(!is.na(x)))]
 new_data = enter_data[ , 7:59]
 
 answers <- predict(modFit,new_data)
-answers
+pml_write_files(answers)
 ```
 
 
