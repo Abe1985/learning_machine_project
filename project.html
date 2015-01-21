@@ -63,19 +63,82 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways.</p>
 <p>For this analysis i</p>
 </div>
-<div id="data-processing" class="section level3">
-<h3>Data Processing</h3>
-<p>I will load training and testing datasets from CSV files and identify NA values</p>
+<div id="preparing-data" class="section level3">
+<h3>Preparing Data</h3>
+<p>Load training and testing datasets from CSV files and identify NA values</p>
 <pre class="r"><code>setwd(&quot;/home/fabiomazzo/R/project_learning_machine/&quot;)
 training &lt;- read.csv(&quot;pml-training.csv&quot;,na.strings=c(&quot;NA&quot;,&quot;&quot;,&quot;#DIV/0!&quot;))
 testing  &lt;- read.csv(&quot;pml-testing.csv&quot;,na.strings=c(&quot;NA&quot;,&quot;&quot;,&quot;#DIV/0!&quot;))</code></pre>
-<p>There are many columns with NA values, as we see with the command below.</p>
-<pre class="r"><code>head(colSums(is.na(training)))</code></pre>
-<pre><code>##                    X            user_name raw_timestamp_part_1 
-##                    0                    0                    0 
-## raw_timestamp_part_2       cvtd_timestamp           new_window 
-##                    0                    0                    0</code></pre>
-<p>I will remove columns with NA values,</p>
+<p>There are many columns with NA values, as we see with the command: colSums(is.na(training)). I will not actually print the result in the document because it is too large.</p>
+<p>Remove the columns where the most values are NA.</p>
+<pre class="r"><code>tidy_data &lt;- training[, !apply( training , 2 , function(x) sum(is.na(x)) &gt; sum(!is.na(x)))]</code></pre>
+<p>Split in training and testing data sets:</p>
+<pre class="r"><code> library(caret);library(randomForest);</code></pre>
+<pre><code>## Loading required package: lattice
+## Loading required package: ggplot2
+## randomForest 4.6-10
+## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre class="r"><code> set.seed(1)
+ inTrain = createDataPartition(y=tidy_data$classe, p=0.7, list=FALSE)
+ tidy_training = tidy_data [inTrain,]
+ tidy_testing = tidy_data [-inTrain,]</code></pre>
+</div>
+<div id="prediction-using-random-forests" class="section level3">
+<h3>Prediction using Random Forests</h3>
+<p>I will use the Random Forests because it has high accuracy, and performance is not essential in this case. I will use a randomForest function instead of train, because it is faster.</p>
+<pre class="r"><code>modFit &lt;- randomForest(classe ~ ., data=tidy_training, method=&quot;rf&quot;, importance=TRUE, ntree = 50)
+modFit</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(formula = classe ~ ., data = tidy_training, method = &quot;rf&quot;,      importance = TRUE, ntree = 50) 
+##                Type of random forest: classification
+##                      Number of trees: 50
+## No. of variables tried at each split: 7
+## 
+##         OOB estimate of  error rate: 0.02%
+## Confusion matrix:
+##      A    B    C    D    E  class.error
+## A 3906    0    0    0    0 0.0000000000
+## B    1 2657    0    0    0 0.0003762227
+## C    0    2 2394    0    0 0.0008347245
+## D    0    0    0 2252    0 0.0000000000
+## E    0    0    0    0 2525 0.0000000000</code></pre>
+<p>As we can see in the model, the error rate is very low, about 0.02%. What gives us an accuracy of 99.8%.</p>
+<p>Now, we can evaluate the model with testing data</p>
+<pre class="r"><code>predTesting =predict(modFit, tidy_testing)
+confusionMatrix(tidy_testing$classe, predTesting)</code></pre>
+<pre><code>## Loading required namespace: e1071</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1674    0    0    0    0
+##          B    0 1139    0    0    0
+##          C    0    0 1026    0    0
+##          D    0    0    0  964    0
+##          E    0    0    0    0 1082
+## 
+## Overall Statistics
+##                                      
+##                Accuracy : 1          
+##                  95% CI : (0.9994, 1)
+##     No Information Rate : 0.2845     
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16  
+##                                      
+##                   Kappa : 1          
+##  Mcnemar's Test P-Value : NA         
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Specificity            1.0000   1.0000   1.0000   1.0000   1.0000
+## Pos Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Neg Pred Value         1.0000   1.0000   1.0000   1.0000   1.0000
+## Prevalence             0.2845   0.1935   0.1743   0.1638   0.1839
+## Detection Rate         0.2845   0.1935   0.1743   0.1638   0.1839
+## Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839
+## Balanced Accuracy      1.0000   1.0000   1.0000   1.0000   1.0000</code></pre>
 </div>
 </div>
 

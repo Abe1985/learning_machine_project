@@ -39,7 +39,8 @@ tidy_data <- training[, !apply( training , 2 , function(x) sum(is.na(x)) > sum(!
 
 Split in training and testing data sets:
 ```{r}
- library(caret)
+ library(caret);library(randomForest);
+ set.seed(1)
  inTrain = createDataPartition(y=tidy_data$classe, p=0.7, list=FALSE)
  tidy_training = tidy_data [inTrain,]
  tidy_testing = tidy_data [-inTrain,]
@@ -47,15 +48,20 @@ Split in training and testing data sets:
 
 ### Prediction using Random Forests
 
-I will use the Random Forests because it has high accuracy, and performance is not essential in this case.
-
+I will use the Random Forests because it has high accuracy, and performance is not essential in this case. I will use a randomForest function instead of train, because it is faster.
 ```{r}
-modFit <- train(classe ~ ., data=tidy_training, method="rf", prox=TRUE)
+modFit <- randomForest(classe ~ ., data=tidy_training, method="rf", importance=TRUE, ntree = 50)
 modFit
 ```
+As we can see in the model, the error rate is very low, about 0.02%. What gives us an accuracy of 99.8%.
 
+Now, we can evaluate the model with testing data
 
+```{r}
+predTesting =predict(modFit, tidy_testing)
+confusionMatrix(tidy_testing$classe, predTesting)
 
+```
 
 
 
